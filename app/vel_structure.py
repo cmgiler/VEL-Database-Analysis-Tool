@@ -359,6 +359,19 @@ class VEL_Struct:
                                             self.data[search_name] = row.iloc[loc + 1]
                                     else:
                                         self.data[search_name] = row.iloc[loc + 1]
+        for idx, row in df.iterrows():
+            row = row.dropna()
+            for idx2, elem in row.iteritems():
+                if elem == 'J2951':
+                    df_j2951 = df.ix[idx:].ix[:, 3:].dropna(axis=1, how='all').dropna(how='all', axis=0)
+                    df_j2951.iloc[0][0:2] = df_j2951.iloc[1][0:2]
+                    df_j2951 = df_j2951.drop(df_j2951.index[1])
+                    df_j2951.columns = df_j2951.iloc[0]
+                    df_j2951 = df_j2951.drop(df_j2951.index[0])
+                    df_j2951.index = df_j2951.ix[:,0]
+                    self.data['J2951'] = df_j2951.T.to_dict()
+                    return
+
 
 
     def load_pm_data(self):
@@ -602,6 +615,20 @@ class VEL_Struct:
                                    em_value['Grams/ph']]
                 query, apply_values = insert_query(column_names, dict_values, table_name)
                 cur.execute(query, apply_values)
+
+        try:
+            # Insert into 'j2951'
+            # _id, cycle, cycle_id, ascr, eer, iwr
+            table_name = 'j2951'
+            column_names = ['_id', 'cycle', 'cycle_id', 'ascr', 'eer', 'iwr']
+            for key, value in self.data['J2951'].iteritems():
+                dict_values = [self.data['_id'], value['Cycle'], value['Cycle ID'],
+                               value['ASCR'], value['EER'], value['IWR']]
+                query, apply_values = insert_query(column_names, dict_values, table_name)
+                cur.execute(query, apply_values)
+        except:
+            print 'J2951 Data not available for Test ID ' + self.data['_id']
+
 
         conn.commit()
         cur.close()
