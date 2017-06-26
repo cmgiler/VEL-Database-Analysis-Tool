@@ -1,0 +1,6 @@
+xlrd == 1.0.0
+numpy = 1.12.1
+pandas == 0.20.2
+cx_Freeze == 5.0.2
+psycopg2
+sqlalchemy == 1.1.11
