@@ -610,9 +610,11 @@ class VEL_Struct:
                     #                em_value['Net conc'], em_value['Range'], em_value['Sample'],
                     #                em_value['Sample Std'], em_value['Unit']]
                     column_names = ['_id', 'phase', 'emission_type', 'grams_per_mi',
-                                    'grams_per_ph']
+                                    'grams_per_ph', 'ambient', 'range',
+                                    'sample', 'modal_corr', 'net_conc']
                     dict_values = [self.data['_id'], key, em_key, em_value['Grams/mi'],
-                                   em_value['Grams/ph']]
+                                   em_value['Grams/ph'], em_value['Ambient'], em_value['Range'],
+                                   em_value['Sample'], em_value['Modal Corr'], em_value['Net conc']]
                 query, apply_values = insert_query(column_names, dict_values, table_name)
                 cur.execute(query, apply_values)
 
