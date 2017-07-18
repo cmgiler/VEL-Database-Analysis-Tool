@@ -8,4 +8,4 @@
 /VEL_dbBackup_20Jun17.backup
 /app/COLLECTIONS.py
 /app/COLLECTIONS.pyc
-.gitignore
+/.gitignore
