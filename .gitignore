@@ -6,5 +6,5 @@
 /VEL_Database_19Jun17.backup
 /VEL_Database_20Jun17.backup
 /VEL_dbBackup_20Jun17.backup
-/app/COLLECTIONS.py
-/app/COLLECTIONS.pyc
+app/COLLECTIONS.py
+app/COLLECTIONS.pyc
