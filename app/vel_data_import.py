@@ -118,7 +118,7 @@ def vel_folder_to_sql():
                                                                                     len(files),
                                                                                     VEL_Dict.data['_id']))
 
-def vel_db_to_csvs():
+def vel_db_to_csvs(use_aws=False):
     import COLLECTIONS as cln
     import psycopg2
     import os
@@ -134,9 +134,16 @@ def vel_db_to_csvs():
         return
 
     # Start SQL Instance
-    conn = psycopg2.connect("dbname=" + cln.DATABASE_NAME +
-                            " user=" + cln.DATABASE_USER +
-                            " password=" + cln.DATABASE_PASSWORD)
+    if use_aws:
+        conn = psycopg2.connect(host=cln.AWS_HOST,
+                                port=cln.AWS_PORT,
+                                dbname=cln.AWS_DATABASE_NAME,
+                                user=cln.AWS_DATABASE_USER,
+                                password=cln.AWS_DATABASE_PASSWORD)
+    else:
+        conn = psycopg2.connect("dbname=" + cln.DATABASE_NAME +
+                                " user=" + cln.DATABASE_USER +
+                                " password=" + cln.DATABASE_PASSWORD)
     cur = conn.cursor()
 
     # Get set of table names in database
@@ -218,6 +225,7 @@ def encrypt_sql_database_values(base_db_name='', base_db_user='', base_db_passwo
     test_info = pdsql.read_sql_table('test_info', engine)
     time_info = pdsql.read_sql_table('time_info', engine)
     vehicle = pdsql.read_sql_table('vehicle', engine)
+    j2951 = pdsql.read_sql_table('j2951', engine)
 
 
 
@@ -364,7 +372,12 @@ def encrypt_sql_database_values(base_db_name='', base_db_user='', base_db_passwo
     vehicle['vehicle_model'] = vehicle['vehicle_model'].apply(lambda x: veh_map[x])
     vehicle['tire_size'] = None
 
-    #  Step 10: Randomize _id names among all tables
+    # Step 10: Randomize j2951 data
+    for col_name in j2951.columns:
+        if col_name not in ['_id', 'cycle', 'cycle_id']:
+            j2951[col_name] = j2951[col_name] * rand_unf(0.7, 1.3)
+
+    #  Step 11: Randomize _id names among all tables
     for key in id_veh_map.keys():
         id_veh_map[key] = id_generator(size=8)+'_'+id_generator(size=8)+'_'+id_generator(size=3)
 
@@ -377,6 +390,7 @@ def encrypt_sql_database_values(base_db_name='', base_db_user='', base_db_passwo
     test_info['_id'] = test_info['_id'].apply(lambda x: id_veh_map[x])
     time_info['_id'] = time_info['_id'].apply(lambda x: id_veh_map[x])
     vehicle['_id'] = vehicle['_id'].apply(lambda x: id_veh_map[x])
+    j2951['_id'] = j2951['_id'].apply(lambda x: id_veh_map[x])
 
     # Write new tables to new database (enc_db_name/user/password)
     ## Reset
@@ -405,8 +419,6 @@ def encrypt_sql_database_values(base_db_name='', base_db_user='', base_db_passwo
 
     print 'general...'
     general.to_sql('general', engine_aws, if_exists='append', index=False)
-    print 'bag_em...'
-    bag_em.to_sql('bag_em', engine_aws, if_exists='append', index=False)
     print 'dynamometer...'
     dynamometer.to_sql('dynamometer', engine_aws, if_exists='append', index=False)
     print 'fuel...'
@@ -421,3 +433,7 @@ def encrypt_sql_database_values(base_db_name='', base_db_user='', base_db_passwo
     time_info.to_sql('time_info', engine_aws, if_exists='append', index=False)
     print 'vehicle...'
     vehicle.to_sql('vehicle', engine_aws, if_exists='append', index=False)
+    print 'j2951...'
+    j2951.to_sql('j2951', engine_aws, if_exists='append', index=False)
+    print 'bag_em...'
+    bag_em.to_sql('bag_em', engine_aws, if_exists='append', index=False)
